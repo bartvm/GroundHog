@@ -1,19 +1,24 @@
 <?php
+/* This basically forwards API requests to Flower. Needed if
+ * the webserver doesn't support Python, but does have PHP support. */
 
-# make sure that only one script at a time accesses the sampling server
-$fp = fopen('/tmp/flock', 'w');
-if (flock($fp, LOCK_EX)) 
-{
-	$source=$_GET["source"];
-	$url = 'http://eos12:8888/?ignore_unk='.$_GET['ignore_unk'].'&source='.urlencode($source);
-	$out = file_get_contents($url);
+$api = 'http://localhost:5555/api/';
 
-	echo urldecode($out);
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+  curl_setopt($ch, CURLOPT_POST, 1);
+  curl_setopt($ch, CURLOPT_URL, $api . $_POST['method']);
+  curl_setopt($ch, CURLOPT_POSTFIELDS, $_POST['json']);
+} elseif ($_SERVER["REQUEST_METHOD"] == "GET") {
+  curl_setopt($ch, CURLOPT_URL, $api . $_GET['method']);
+} else {
+  echo '{}';
+  exit;
 }
-else
-{
-	echo "Server timeout! Try again later.";
-}
-
+echo curl_exec($ch);
+curl_close($ch);
 ?>
 

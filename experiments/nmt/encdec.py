@@ -1460,7 +1460,8 @@ class RNNEncoderDecoder(object):
                     inputs=[self.c, self.step_num, self.gen_y] + self.current_states,
                     outputs=[self.decoder.build_next_probs_predictor(
                         self.c, self.step_num, self.gen_y, self.current_states)],
-                    name="next_probs_fn")
+                    name="next_probs_fn",
+                    on_unused_input='warn')
         return self.next_probs_fn
 
     def create_next_states_computer(self):
@@ -1469,7 +1470,8 @@ class RNNEncoderDecoder(object):
                     inputs=[self.c, self.step_num, self.gen_y] + self.current_states,
                     outputs=self.decoder.build_next_states_computer(
                         self.c, self.step_num, self.gen_y, self.current_states),
-                    name="next_states_fn")
+                    name="next_states_fn",
+                    on_unused_input='warn')
         return self.next_states_fn
 
 
@@ -1479,7 +1481,8 @@ class RNNEncoderDecoder(object):
             self.probs_fn = theano.function(
                     inputs=self.inputs,
                     outputs=[self.predictions.word_probs, self.alignment],
-                    name="probs_fn")
+                    name="probs_fn",
+                    on_unused_input='warn')
         def probs_computer(x, y):
             x_mask = numpy.ones(x.shape[0], dtype="float32")
             y_mask = numpy.ones(y.shape[0], dtype="float32")
