@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>D3 Test</title>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <style type="text/css">
+      .link {
+        fill: none;
+        stroke: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+      var width = 960, height = 960;
+
+      var source = "This is a test with a longer sentence".split(" ");
+      var target = "Il s' agit d' un test à plus long terme".split(" ");
+      var data = [];
+
+      for (var i = 0; i < source.length; i++) {
+        data.push({token: source[i], sentence: 'source', index: i});
+      }
+      for (var i = 0; i < target.length; i++) {
+        data.push({token: target[i], sentence: 'target', index: i});
+      }
+
+      var diagonal = d3.svg.diagonal()
+        .source(function(d) { return {x: d.source.x, y: d.source.y}; })
+        .target(function(d) { return {x: d.target.x, y: d.target.y}; });
+
+      var svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      /* Calculate the width needed for both sentences by creating the 
+       * text elements and seeing how long they are */
+      var text = svg.selectAll('text').
+        data(data).
+        enter().
+        append('text').
+        text(function(d, i) { return d.token; }).
+        style('font-family', 'sans-serif').
+        each(function(d, i) { d.width = this.getComputedTextLength();}).
+        attr('x', function(d, i) {
+          if (i > 0) {
+            var prev = d3.select(this.previousSibling);
+            if (prev.data()[0].sentence != d.sentence) {
+              return 0;
+            }
+            return parseFloat(prev.attr('x')) + prev.data()[0].width + 8;
+          } else {
+            return 0;
+          }
+        }).
+        attr('y', function(d, i) {return d.sentence == 'target' ? 100 : 20;});
+
+
+
+      /* Create the links between the words */
+      var links = [];
+      var weights = [[0.5226877927780151,
+                      0.06314805895090103,
+                      0.07541967183351517,
+                      0.08864286541938782,
+                      0.040671370923519135,
+                      0.023560630157589912,
+                      0.027084289118647575,
+                      0.013243429362773895,
+                      0.14554189145565033],
+                     [0.3198116421699524,
+                      0.2858845293521881,
+                      0.03131633996963501,
+                      0.08049557358026505,
+                      0.1075371578335762,
+                      0.012286094948649406,
+                      0.05955812707543373,
+                      0.0102387061342597,
+                      0.09287183731794357],
+                     [0.050002310425043106,
+                      0.3768005669116974,
+                      0.05585413798689842,
+                      0.250503808259964,
+                      0.08004578202962875,
+                      0.010882867500185966,
+                      0.06373117864131927,
+                      0.023884257301688194,
+                      0.0882951021194458],
+                     [0.03959708660840988,
+                      0.02981652319431305,
+                      0.3752511143684387,
+                      0.13151082396507263,
+                      0.07376205921173096,
+                      0.270347535610199,
+                      0.07178672403097153,
+                      0.004029359668493271,
+                      0.0038987374864518642],
+                     [0.039660461246967316,
+                      0.02762727625668049,
+                      0.5075826048851013,
+                      0.30270659923553467,
+                      0.023008890450000763,
+                      0.06264109909534454,
+                      0.03064759634435177,
+                      0.004629939794540405,
+                      0.0014955558581277728],
+                     [0.0060649109072983265,
+                      0.011728065088391304,
+                      0.04485924914479256,
+                      0.9048361778259277,
+                      0.011683756485581398,
+                      0.002360576530918479,
+                      0.007724996656179428,
+                      0.009287383407354355,
+                      0.0014548500766977668],
+                     [0.011652353219687939,
+                      0.012029148638248444,
+                      0.010574894957244396,
+                      0.03730310872197151,
+                      0.6288409233093262,
+                      0.024967048317193985,
+                      0.226424902677536,
+                      0.03183221071958542,
+                      0.016375429928302765],
+                     [0.002389861736446619,
+                      4.393546987557784e-05,
+                      0.004402294289320707,
+                      0.023616371676325798,
+                      0.05734565854072571,
+                      0.1906728446483612,
+                      0.6672233939170837,
+                      0.03268259018659592,
+                      0.021623102948069572],
+                     [0.00014363741502165794,
+                      2.117791518685408e-05,
+                      0.0002787731064017862,
+                      0.0022983807139098644,
+                      0.029340706765651703,
+                      0.022480206564068794,
+                      0.7970658540725708,
+                      0.12210538238286972,
+                      0.026265861466526985],
+                     [0.0019020183244720101,
+                      0.0014707432128489017,
+                      0.0036278178449720144,
+                      0.012765694409608841,
+                      0.13631363213062286,
+                      0.019039031118154526,
+                      0.053116489201784134,
+                      0.7055956721305847,
+                      0.0661688968539238],
+                     [0.02801389992237091,
+                      0.03282373398542404,
+                      0.009930572472512722,
+                      0.033350445330142975,
+                      0.34660303592681885,
+                      0.009796390309929848,
+                      0.018016617745161057,
+                      0.1805018186569214,
+                      0.3409634530544281]];
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].sentence != 'source') {
+          break;
+        }
+        for (var j = 0; j < data.length; j++) {
+          if (data[j].sentence != 'target') {
+            continue;
+          }
+          console.log([i, j  - source.length, weights[j - source.length ][i]]);
+          links.push({
+            weight: weights[j - source.length][i],
+            source: {
+              x: parseFloat(d3.select(text[0][i]).attr('x')) + data[i].width / 2,
+              y: 27,
+            },
+            target: {
+              x: parseFloat(d3.select(text[0][j]).attr('x')) + data[j].width / 2,
+              y: 82,
+            },
+          });
+        }
+      }
+
+
+      var link = svg.selectAll(".link")
+                  .data(links)
+                  .enter().append("path")
+                  .attr("class", "link")
+                  .attr("d", diagonal)
+                  .style('stroke-opacity', function(d, i) {
+                    return d.weight;
+                  })
+                  .style('stroke-width', function(d, i) {
+                    return  d.weight;
+                  });
+    </script>
+  </body>
+</html>
